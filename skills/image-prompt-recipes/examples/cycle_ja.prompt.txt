@@ -1,0 +1,10 @@
+Modern premium FLAT-DESIGN infographic for a public-sector briefing on community recycling. Square canvas, off-white background #F4F6F1 filling the whole canvas, no border frame. Strict color system only: deep forest green #1F5E2E, fresh green #2E7D32, earth brown #5A3D2B, warm amber #E8A33D, soft neutral gray #5B5F58, plus pale tints of these. Thin elegant two-tone line-art icons and small illustrated scenes with consistent stroke weight, amber numbered badges with white numerals, soft subtle shadows. The diagram must FILL the canvas: large elements, large legible labels, no big empty areas, but keep a clean 4% margin so nothing touches the edges. Sophisticated, calm, trustworthy editorial look — NOT cartoonish, no emoji, no clip-art, no photos. No watermark, no logo, no overall title at the top (the slide has its own title).
+All text is Japanese, rendered ACCURATELY and legibly in a clean gothic sans (UD gothic style). Use exactly the Japanese strings given — do not add, translate or paraphrase any text.
+Content: a circular CYCLE diagram (closed loop) with 5 nodes evenly placed around a central dark green filled circle. Center text two lines: '町の' / '資源循環' in white. Thin amber arrows flow clockwise connecting the five nodes in order.
+Node 1 (amber badge 1) icon of a kitchen: '家庭の生ごみ'.
+Node 2 (badge 2) icon of a compost bin: '地域で処理'.
+Node 3 (badge 3) icon of a sack with sprout: '土の材料'.
+Node 4 (badge 4) icon of a community garden: '市民農園'.
+Node 5 (badge 5) icon of vegetables in a basket: '地元の野菜'.
+Short labels exactly as given, placed beside each node.
+Keep each label SHORT exactly as given. The ONLY text in the image is the quoted labels, spelled exactly as given; do NOT add any other words, signs, shop signs, banners, captions or titles. The setting is neutral and not identifiable as any particular country (no landmarks, no flags). No watermark, no logo.

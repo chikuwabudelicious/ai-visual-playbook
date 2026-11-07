@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ja" data-composition-variables='[
+  {"id":"series","type":"string","label":"シリーズ名","default":"数えて分かる｜カフェの分別（見本）"},
+  {"id":"ep","type":"string","label":"話数","default":"#01"},
+  {"id":"title","type":"string","label":"問いかけ（/ で改行・2行まで）","default":"カップを捨てる前に、/見るところは"},
+  {"id":"num","type":"string","label":"数（特大）","default":"3つ"},
+  {"id":"n","type":"number","label":"項目の数（3〜5）","default":3},
+  {"id":"i1","type":"string","label":"項目1","default":"ふたを外す"},
+  {"id":"d1","type":"string","label":"項目1の補足（/ で改行）","default":"ふたは、プラスチックの箱へ"},
+  {"id":"i2","type":"string","label":"項目2","default":"中身を空にする"},
+  {"id":"d2","type":"string","label":"項目2の補足","default":"飲み残しは、/返却口の流しへ"},
+  {"id":"i3","type":"string","label":"項目3","default":"スリーブを分ける"},
+  {"id":"d3","type":"string","label":"項目3の補足","default":"紙のスリーブは、紙の箱へ"},
+  {"id":"i4","type":"string","label":"項目4","default":""},
+  {"id":"d4","type":"string","label":"項目4の補足","default":""},
+  {"id":"i5","type":"string","label":"項目5","default":""},
+  {"id":"d5","type":"string","label":"項目5の補足","default":""},
+  {"id":"sum_label","type":"string","label":"まとめの前置き","default":"つまり、"},
+  {"id":"outro","type":"string","label":"まとめ（/ で改行・2行まで）","default":"3つ分けるだけで、/次の資源になる。"},
+  {"id":"credit","type":"string","label":"発信者名（締めに大きく）","default":"◯◯コーヒー 駅前店"},
+  {"id":"note","type":"string","label":"出典（1行）","default":"見本のための架空の内容です"},
+  {"id":"bpm","type":"number","label":"BGM のテンポ（110〜140。倍・半分のテンポでもよい）","default":118},
+  {"id":"beat_offset","type":"number","label":"最初の拍の秒","default":0}
+]'>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<title>Count It Short</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&display=block" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+/* 数えて分かる（縦 1080x1920・24秒・BGMのみ）。問いかけ＋特大の数 → 項目を1つずつ積む → まとめ → 発信者名。
+   文言はすべて変数、時刻は拍。SNS の UI に隠れる上220px・下420px・右140px には読ませる文字を置かない */
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Noto Sans JP",sans-serif;font-weight:700;}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#F4F6F1;color:#0B2314;}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#F4F6F1;}
+.ln{display:block;white-space:nowrap;line-height:1.28;}
+#kicker{position:absolute;left:60px;top:250px;width:880px;font-size:30px;white-space:nowrap;color:#5C6E61;}
+#k-ep{color:#B7791F;margin-left:16px;}
+#cover{position:absolute;left:0;top:0;width:1080px;height:1920px;}
+#c-title{position:absolute;left:60px;top:520px;width:880px;color:#0B2314;}
+#c-num{position:absolute;left:60px;top:760px;width:880px;line-height:1;color:#1B5E20;white-space:nowrap;opacity:0;}
+#c-bar{position:absolute;left:66px;top:1090px;width:420px;height:16px;border-radius:8px;background:#E8A617;transform-origin:0 50%;transform:scaleX(0);}
+#head{position:absolute;left:60px;top:300px;width:880px;height:130px;opacity:0;display:flex;align-items:baseline;gap:18px;padding-top:20px;}
+#h-title{white-space:nowrap;color:#0B2314;line-height:1.2;}
+#h-num{line-height:1;color:#1B5E20;white-space:nowrap;}
+#h-bar{position:absolute;left:60px;top:452px;width:880px;height:6px;border-radius:3px;background:#E8A617;transform-origin:0 50%;opacity:0;}
+.item{position:absolute;left:60px;width:880px;opacity:0;}
+.item .hl{position:absolute;inset:0;background:#FFFFFF;border-left:10px solid #E8A617;border-radius:18px;opacity:0;}
+.item .bd{position:absolute;left:22px;width:84px;height:84px;border-radius:42px;background:#1B5E20;color:#FFFFFF;font-size:46px;line-height:84px;text-align:center;}
+.item .lb{position:absolute;left:130px;width:730px;white-space:nowrap;color:#0B2314;line-height:1.25;}
+.item .ds{position:absolute;left:130px;width:730px;color:#4A5A50;}
+.item .ds span{display:block;white-space:nowrap;line-height:1.3;}
+#sum{position:absolute;left:60px;top:700px;width:880px;padding:44px 48px 52px;border-radius:26px;background:#0B2314;opacity:0;}
+#s-label{display:block;font-size:40px;color:#E8A617;}
+#s-text{display:block;margin-top:18px;color:#F4F6F1;}
+#s-text span{display:block;white-space:nowrap;line-height:1.3;}
+#end{position:absolute;left:60px;top:1150px;width:880px;text-align:center;opacity:0;}
+#credit{display:block;color:#0B2314;white-space:nowrap;}
+#note{display:block;margin-top:26px;font-size:26px;color:#5C6E61;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-width="1080" data-height="1920" data-duration="24">
+  <div id="stage" class="clip" data-start="0" data-duration="24" data-track-index="1">
+    <div id="kicker"><span id="k-series"></span><span id="k-ep"></span></div>
+    <div id="cover"><div id="c-title"></div><div id="c-num"></div><div id="c-bar"></div></div>
+    <div id="head"><div id="h-title"></div><div id="h-num"></div></div>
+    <div id="h-bar"></div>
+    <div id="items"></div>
+    <div id="sum"><span id="s-label"></span><span id="s-text"></span></div>
+    <div id="end"><span id="credit"></span><span id="note"></span></div>
+  </div>
+</div>
+<script>
+(function () {
+  var D = {};
+  try { JSON.parse(document.documentElement.getAttribute("data-composition-variables")).forEach(function (d) { D[d.id] = d["default"]; }); } catch (e) {}
+  var H = (window.__hyperframes && window.__hyperframes.getVariables) ? window.__hyperframes.getVariables() : {};
+  var V = Object.assign(D, H, window.__VARS || {});
+  function $(id) { return document.getElementById(id); }
+  function put(id, s) { $(id).textContent = s == null ? "" : String(s); }
+  var ASCII = [0.33,0.37,0.52,0.94,0.80,1.00,0.91,0.32,0.50,0.51,0.50,0.84,0.33,0.48,0.33,0.50,0.76,0.63,0.76,0.76,0.76,0.76,0.76,0.76,0.76,0.76,0.34,0.34,0.84,0.84,0.84,0.80,0.98,0.78,0.77,0.81,0.85,0.70,0.67,0.86,0.84,0.44,0.56,0.76,0.61,1.00,0.84,0.88,0.76,0.90,0.76,0.73,0.70,0.86,0.76,1.00,0.82,0.74,0.75,0.55,0.80,0.55,0.50,0.31,0.50,0.66,0.73,0.64,0.73,0.69,0.51,0.67,0.72,0.32,0.40,0.66,0.36,0.96,0.72,0.70,0.73,0.73,0.49,0.59,0.49,0.72,0.60,0.90,0.62,0.64,0.58,0.54,0.44,0.54,0.50];
+  function est(s) {
+    var w = 0;
+    for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); w += (c >= 0x20 && c < 0x7f) ? ASCII[c - 0x20] : 1.0; }
+    return w * 1.08;
+  }
+  function size(base, s, maxW) { return Math.min(base, Math.floor(maxW / Math.max(est(s), 0.5))); }
+  function lines(el, s, base, maxW) {
+    var mx = 0; el.textContent = "";
+    String(s || "").split("/").forEach(function (t) { var sp = document.createElement("span"); sp.className = "ln"; sp.textContent = t; el.appendChild(sp); mx = Math.max(mx, est(t)); });
+    var f = Math.min(base, Math.floor(maxW / Math.max(mx, 0.5)));
+    el.style.fontSize = f + "px";
+    return f;
+  }
+
+  put("k-series", V.series); put("k-ep", V.ep);
+  lines($("c-title"), V.title, 76, 880);
+  put("c-num", V.num); $("c-num").style.fontSize = size(300, String(V.num || ""), 880) + "px";
+  // 見出し：問いかけ（1行にまとめる）＋数
+  var ht = String(V.title || "").replace(/\//g, /[A-Za-z]/.test(V.title || "") ? " " : "");
+  put("h-title", ht); put("h-num", V.num);
+  var hn = size(96, String(V.num || ""), 300), hw = est(String(V.num || "")) * hn;
+  $("h-num").style.fontSize = hn + "px";
+  $("h-title").style.fontSize = size(48, ht, 880 - hw - 24) + "px";
+
+  // 項目（3〜5）。行の高さは数に合わせる
+  var n = Math.max(3, Math.min(5, Number(V.n || 3)));
+  var TOP = 490, AREA = 1000, RH = Math.min(300, Math.floor(AREA / n)), BIG = n < 5;
+  for (var k = 1; k <= n; k++) {
+    var it = document.createElement("div"); it.className = "item"; it.id = "it" + k;
+    it.style.top = (TOP + (k - 1) * RH) + "px"; it.style.height = (RH - 18) + "px";
+    var hl = document.createElement("div"); hl.className = "hl"; hl.id = "hl" + k; it.appendChild(hl);
+    var bd = document.createElement("div"); bd.className = "bd"; bd.textContent = k; bd.style.top = ((RH - 18 - 84) / 2) + "px"; it.appendChild(bd);
+    var lb = document.createElement("div"); lb.className = "lb"; lb.textContent = V["i" + k] || "";
+    var lf = size(BIG ? 62 : 52, lb.textContent, 730); lb.style.fontSize = lf + "px"; it.appendChild(lb);
+    var ds = document.createElement("div"); ds.className = "ds"; it.appendChild(ds);
+    var dsz = lines(ds, V["d" + k], BIG ? 40 : 33, 730);
+    var dl = String(V["d" + k] || "") ? String(V["d" + k]).split("/").length : 0;
+    var hgt = lf * 1.25 + (dl ? 10 + dl * dsz * 1.3 : 0), top0 = (RH - 18 - hgt) / 2;
+    lb.style.top = top0 + "px"; ds.style.top = (top0 + lf * 1.25 + 10) + "px";
+    $("items").appendChild(it);
+  }
+  put("s-label", V.sum_label); lines($("s-text"), V.outro, 66, 784);
+  put("credit", V.credit); $("credit").style.fontSize = size(60, String(V.credit || ""), 860) + "px";
+  put("note", V.note); $("note").style.fontSize = size(26, String(V.note || ""), 860) + "px";
+
+  // ---- 時刻はすべて拍から
+  var SPB = 60 / Math.max(Number(V.bpm || 118), 30), OFF = Number(V.beat_offset || 0);
+  function B(k) { return OFF + k * SPB; }
+  var PER = Math.floor(30 / n);           // 1項目の拍数（3項目＝10拍・4＝7拍・5＝6拍）
+  var tl = gsap.timeline({ paused: true });
+  // 表紙：1コマ目から問いかけが読める。数は1拍目で弾ける
+  tl.fromTo("#c-num", { opacity: 0, scale: 0.7, transformOrigin: "0% 60%" }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)", immediateRender: false }, B(1));
+  tl.fromTo("#c-bar", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power3.out", immediateRender: false }, B(2));
+  tl.to("#cover", { opacity: 0, y: -60, duration: 0.35, ease: "power2.in" }, B(5) - 0.2);
+  tl.fromTo("#head", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, B(5) + 0.1);
+  tl.fromTo("#h-bar", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.5, ease: "power3.out", immediateRender: false }, B(5) + 0.2);
+  for (var j = 1; j <= n; j++) {
+    var at = B(6 + (j - 1) * PER);
+    tl.fromTo("#it" + j, { opacity: 0, x: 90 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out", immediateRender: false }, at);
+    tl.fromTo("#hl" + j, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.out", immediateRender: false }, at);
+    if (j > 1) tl.to("#hl" + (j - 1), { opacity: 0, duration: 0.3, ease: "power1.in" }, at);
+  }
+  var S0 = B(37);
+  tl.to("#hl" + n, { opacity: 0, duration: 0.3 }, S0 - 0.2);
+  tl.to(".item", { opacity: 0.12, duration: 0.4, ease: "power1.inOut" }, S0 - 0.2);
+  tl.fromTo("#sum", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", immediateRender: false }, S0);
+  tl.to(".item", { opacity: 0, duration: 0.4, ease: "power1.in" }, B(43) - 0.3);   // 締めの下に項目の影を残さない
+  tl.fromTo("#end", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, B(43));
+  tl.set({}, {}, 24);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines["main"] = tl;
+})();
+</script>
+</body>
+</html>

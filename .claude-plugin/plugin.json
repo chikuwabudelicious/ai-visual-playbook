@@ -1,0 +1,7 @@
+{
+  "name": "ai-visual-playbook",
+  "version": "0.1.0",
+  "description": "画像生成AIで図解・挿絵・スライド・短い動画を「一から試行錯誤するより確実に」作るためのプロンプト集と雛形。実務で数千枚・数百本を作って残った型と罠をまとめたもの。",
+  "license": "MIT",
+  "keywords": ["image-generation", "gpt-image", "infographic", "prompt", "slides", "pptx", "video", "veo", "japanese"]
+}

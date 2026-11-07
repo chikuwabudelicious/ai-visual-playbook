@@ -1,0 +1,11 @@
+{
+  "name": "ai-visual-playbook",
+  "owner": {"name": "ai-visual-playbook contributors"},
+  "plugins": [
+    {
+      "name": "ai-visual-playbook",
+      "source": "./",
+      "description": "画像生成AIで図解・挿絵・スライド・短い動画を作るためのプロンプト集と雛形"
+    }
+  ]
+}

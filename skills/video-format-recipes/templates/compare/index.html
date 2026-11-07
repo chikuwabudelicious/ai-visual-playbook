@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ja" data-composition-variables='[
+  {"id":"series","type":"string","label":"シリーズ名","default":"くらべて見る｜図書館の返却（見本）"},
+  {"id":"ep","type":"string","label":"話数","default":"#01"},
+  {"id":"title","type":"string","label":"問いかけ（/ で改行・2行まで）","default":"本の返却、/何が変わる？"},
+  {"id":"lh","type":"string","label":"左の見出し（これまで）","default":"カウンターで返す"},
+  {"id":"rh","type":"string","label":"右の見出し（新しいやり方）","default":"自動返却機で返す"},
+  {"id":"n","type":"number","label":"比べる行の数（2〜4）","default":3},
+  {"id":"k1","type":"string","label":"行1の観点","default":"時間"},
+  {"id":"l1","type":"string","label":"行1 左（/ で改行）","default":"開館時間の/あいだだけ"},
+  {"id":"r1","type":"string","label":"行1 右","default":"休館日も/返せる"},
+  {"id":"k2","type":"string","label":"行2の観点","default":"待ち"},
+  {"id":"l2","type":"string","label":"行2 左","default":"混むと/列ができる"},
+  {"id":"r2","type":"string","label":"行2 右","default":"1冊ずつ/すぐ終わる"},
+  {"id":"k3","type":"string","label":"行3の観点","default":"記録"},
+  {"id":"l3","type":"string","label":"行3 左","default":"職員が/手で入力"},
+  {"id":"r3","type":"string","label":"行3 右","default":"その場で/自動で記録"},
+  {"id":"k4","type":"string","label":"行4の観点","default":""},
+  {"id":"l4","type":"string","label":"行4 左","default":""},
+  {"id":"r4","type":"string","label":"行4 右","default":""},
+  {"id":"outro","type":"string","label":"まとめ（/ で改行・3行まで）","default":"返す手間を減らして、/職員は相談の仕事へ。"},
+  {"id":"credit","type":"string","label":"発信者名（締めに大きく）","default":"◯◯町立図書館"},
+  {"id":"note","type":"string","label":"出典（1行）","default":"見本のための架空の内容です"},
+  {"id":"bpm","type":"number","label":"BGM のテンポ（115〜150。倍・半分のテンポでもよい）","default":123},
+  {"id":"beat_offset","type":"number","label":"最初の拍の秒","default":0}
+]'>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1080" />
+<title>Side by Side</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&display=block" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+/* くらべて見る（正方形 1080x1080・24秒・BGMのみ）。左＝これまで、右＝新しいやり方。観点ごとに左 → 右の順に1行ずつ → まとめ → 発信者名。
+   文言はすべて変数、時刻は拍 */
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Noto Sans JP",sans-serif;font-weight:700;}
+html,body{width:1080px;height:1080px;overflow:hidden;background:#F6F3EE;color:#1E241F;}
+#stage{position:absolute;inset:0;background:#F6F3EE;}
+#head{position:absolute;left:0;top:0;width:1080px;height:200px;background:#1E241F;}
+#kicker{position:absolute;left:44px;top:26px;width:992px;font-size:26px;color:#A9B8AD;white-space:nowrap;}
+#k-ep{color:#E8A617;margin-left:12px;}
+#title{position:absolute;left:44px;top:66px;width:992px;color:#F6F3EE;}
+#title span{display:block;white-space:nowrap;line-height:1.2;}
+.colh{position:absolute;top:222px;width:488px;height:64px;border-radius:32px;display:flex;align-items:center;justify-content:center;white-space:nowrap;color:#fff;opacity:0;}
+#lh{left:36px;background:#8A6E52;}
+#rh{left:556px;background:#1B7F4B;}
+.row{position:absolute;left:36px;width:1008px;}
+.kp{position:absolute;left:424px;top:-17px;width:160px;height:34px;border-radius:17px;background:#1E241F;color:#F6F3EE;
+  display:flex;align-items:center;justify-content:center;white-space:nowrap;z-index:2;opacity:0;}
+.cell{position:absolute;top:0;width:488px;border-radius:18px;display:flex;align-items:center;justify-content:center;text-align:center;opacity:0;}
+.cell span{display:block;white-space:nowrap;line-height:1.25;}
+.lc{left:0;background:#EAE2D7;color:#5E4B37;}
+.rc{left:520px;background:#DDEFE3;color:#0E3B23;box-shadow:inset 0 0 0 4px #1B7F4B;}
+#sum{position:absolute;left:36px;top:330px;width:1008px;padding:44px 50px 50px;border-radius:26px;background:#1E241F;opacity:0;}
+#sum span{display:block;white-space:nowrap;line-height:1.3;color:#F6F3EE;}
+#end{position:absolute;left:36px;top:760px;width:1008px;text-align:center;opacity:0;}
+#credit{display:block;color:#1E241F;white-space:nowrap;}
+#note{display:block;margin-top:12px;font-size:22px;color:#6A706B;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-width="1080" data-height="1080" data-duration="24">
+  <div id="stage" class="clip" data-start="0" data-duration="24" data-track-index="1">
+    <div id="head"><div id="kicker"><span id="k-series"></span><span id="k-ep"></span></div><div id="title"></div></div>
+    <div id="lh" class="colh"></div><div id="rh" class="colh"></div>
+    <div id="rows"></div>
+    <div id="sum"><div id="s-tx"></div></div>
+    <div id="end"><span id="credit"></span><span id="note"></span></div>
+  </div>
+</div>
+<script>
+(function () {
+  var D = {};
+  try { JSON.parse(document.documentElement.getAttribute("data-composition-variables")).forEach(function (d) { D[d.id] = d["default"]; }); } catch (e) {}
+  var H = (window.__hyperframes && window.__hyperframes.getVariables) ? window.__hyperframes.getVariables() : {};
+  var V = Object.assign(D, H, window.__VARS || {});
+  function $(id) { return document.getElementById(id); }
+  var ASCII = [0.33,0.37,0.52,0.94,0.80,1.00,0.91,0.32,0.50,0.51,0.50,0.84,0.33,0.48,0.33,0.50,0.76,0.63,0.76,0.76,0.76,0.76,0.76,0.76,0.76,0.76,0.34,0.34,0.84,0.84,0.84,0.80,0.98,0.78,0.77,0.81,0.85,0.70,0.67,0.86,0.84,0.44,0.56,0.76,0.61,1.00,0.84,0.88,0.76,0.90,0.76,0.73,0.70,0.86,0.76,1.00,0.82,0.74,0.75,0.55,0.80,0.55,0.50,0.31,0.50,0.66,0.73,0.64,0.73,0.69,0.51,0.67,0.72,0.32,0.40,0.66,0.36,0.96,0.72,0.70,0.73,0.73,0.49,0.59,0.49,0.72,0.60,0.90,0.62,0.64,0.58,0.54,0.44,0.54,0.50];
+  function est(s) {
+    var w = 0;
+    for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); w += (c >= 0x20 && c < 0x7f) ? ASCII[c - 0x20] : 1.0; }
+    return w * 1.08;
+  }
+  function fit(base, s, maxW) { return Math.min(base, Math.floor(maxW / Math.max(est(String(s || "")), 0.5))); }
+  function lines(el, s, base, maxW, maxH) {
+    var ls = String(s || "").split("/"), mx = 0; el.textContent = "";
+    ls.forEach(function (t) { var sp = document.createElement("span"); sp.textContent = t; el.appendChild(sp); mx = Math.max(mx, est(t)); });
+    var f = Math.min(base, Math.floor(maxW / Math.max(mx, 0.5)));
+    if (maxH) f = Math.min(f, Math.floor(maxH / (ls.length * 1.25)));
+    el.style.fontSize = f + "px";
+    return f;
+  }
+  $("k-series").textContent = V.series || ""; $("k-ep").textContent = V.ep || "";
+  lines($("title"), V.title, 54, 992, 112);
+  ["lh", "rh"].forEach(function (id) { var e = $(id); e.textContent = V[id] || ""; e.style.fontSize = fit(34, e.textContent, 440) + "px"; });
+  lines($("s-tx"), V.outro, 58, 908, 330);
+  $("credit").textContent = V.credit || ""; $("credit").style.fontSize = fit(54, V.credit, 1000) + "px";
+  $("note").textContent = V.note || ""; $("note").style.fontSize = fit(22, V.note, 1000) + "px";
+  // 行：数に合わせて高さを決める。左右のセルの文字は同じ大きさ（小さい方にそろえる＝右だけ大きく見せない）
+  var n = Math.max(2, Math.min(4, Number(V.n || 3))), TOP = 320, AREA = 730, RH = Math.floor(AREA / n), CH = RH - 34;
+  for (var k = 1; k <= n; k++) {
+    var r = document.createElement("div"); r.className = "row"; r.id = "row" + k; r.style.top = (TOP + (k - 1) * RH + 17) + "px";
+    var kp = document.createElement("div"); kp.className = "kp"; kp.id = "kp" + k; kp.textContent = V["k" + k] || "";
+    kp.style.fontSize = fit(22, kp.textContent, 140) + "px"; r.appendChild(kp);
+    var lc = document.createElement("div"); lc.className = "cell lc"; lc.id = "lc" + k; lc.style.height = CH + "px"; r.appendChild(lc);
+    var rc = document.createElement("div"); rc.className = "cell rc"; rc.id = "rc" + k; rc.style.height = CH + "px"; r.appendChild(rc);
+    var a = document.createElement("div"), b = document.createElement("div"); lc.appendChild(a); rc.appendChild(b);
+    var f = Math.min(lines(a, V["l" + k], 40, 440, CH - 30), lines(b, V["r" + k], 40, 440, CH - 30));
+    a.style.fontSize = f + "px"; b.style.fontSize = f + "px";
+    $("rows").appendChild(r);
+  }
+
+  // ---- 時刻はすべて拍から
+  var SPB = 60 / Math.max(Number(V.bpm || 123), 30), OFF = Number(V.beat_offset || 0);
+  function B(k) { return OFF + k * SPB; }
+  var PER = Math.floor(32 / n);
+  var tl = gsap.timeline({ paused: true });
+  tl.fromTo(".colh", { opacity: 0, y: -16 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.2, ease: "power3.out", immediateRender: false }, B(1));
+  for (var i = 1; i <= n; i++) {
+    var at = B(4 + (i - 1) * PER);
+    tl.fromTo("#kp" + i, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)", immediateRender: false }, at);
+    tl.fromTo("#lc" + i, { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, at + 0.1);
+    tl.fromTo("#rc" + i, { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out", immediateRender: false }, B(4 + (i - 1) * PER + 2));
+    tl.fromTo("#rc" + i, { scale: 1 }, { scale: 1.04, duration: 0.2, yoyo: true, repeat: 1, ease: "power1.out", immediateRender: false }, B(4 + (i - 1) * PER + 2) + 0.4);
+  }
+  var S0 = B(4 + n * PER) + 0.3, E0 = Math.min(S0 + 3.0, 21.5);
+  tl.to([".row", ".colh"], { opacity: 0.1, duration: 0.4, ease: "power1.inOut" }, S0 - 0.3);
+  tl.fromTo("#sum", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", immediateRender: false }, S0);
+  tl.to([".row", ".colh"], { opacity: 0, duration: 0.4, ease: "power1.in" }, E0 - 0.3);   // 締めの下に行の影を残さない
+  tl.fromTo("#end", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, E0);
+  tl.set({}, {}, 24);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines["main"] = tl;
+})();
+</script>
+</body>
+</html>
